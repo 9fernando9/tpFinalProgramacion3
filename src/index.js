@@ -2,7 +2,8 @@ import express from 'express';
 import routes from './routes/index.routes.js';
 
 const app = express();
-
+//Middleware to parse JSON bodies
+app.use(express.json());
 // ROUTES
 app.use(routes);
 
