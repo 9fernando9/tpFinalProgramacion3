@@ -1,21 +1,22 @@
 {
-  "name": "app-reservas",
+  "name": "tp-final-integrador",
   "version": "1.0.0",
-  "description": "aplicacion de reservas",
-  "main": "index.js",
+  "description": "trabajo final integrador",
   "type": "module",
+  "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon src/index.js"
+    "test": "run",
+    "des": "node --watch index.js"
   },
-  "author": "LFG",
+  "author": "Marcelo Romero",
   "license": "ISC",
-  "devDependencies": {
-    "nodemon": "^3.1.10"
-  },
   "dependencies": {
-    "dotenv": "^17.2.3",
+    "dotenv": "^17.2.2",
     "express": "^5.1.0",
-    "mysql2": "^3.15.1"
+    "express-validator": "^7.2.1",
+    "handlebars": "^4.7.8",
+    "jsonwebtoken": "^9.0.2",
+    "mysql2": "^3.15.1",
+    "nodemailer": "^7.0.6"
   }
 }
