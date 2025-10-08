@@ -2,7 +2,7 @@
   "name": "app-reservas",
   "version": "1.0.0",
   "description": "aplicacion de reservas",
-  "main": "index.js",
+  "main": "src/index.js",
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -10,12 +10,17 @@
   },
   "author": "LFG",
   "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/9fernando9/tpFinalProgramacion3"
+  },
   "devDependencies": {
     "nodemon": "^3.1.10"
   },
   "dependencies": {
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
+    "helmet": "^8.1.0",
     "mysql2": "^3.15.1"
   }
 }
