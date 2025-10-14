@@ -17,7 +17,7 @@ export default class SalonDTO {
         const claves = Object.keys(salon);
         for(const i of claves) {
             const objSalon = {};
-            objSalon[getFieldName(i)] = salon[i];
+            objSalon[this.getFieldName(i)] = salon[i];
             res.push(objSalon);
         }
         return res;

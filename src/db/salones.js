@@ -1,10 +1,8 @@
-
-
 import DbUtils from './dbUtils.js';
 
 export default class Salones {
     
-    findAll = async (filters = null,limit = 0, offset = 0, order = "salon_id",asc= "ASC") => {
+    findAll = async (filters = null,limit = 10, offset = 0, order = "salon_id",asc= "ASC") => {
         let sql = 'SELECT * FROM salones';
         const filterValuesArray = [];
         if (filters) {
@@ -15,7 +13,7 @@ export default class Salones {
                     filterValuesArray.push(filter[key]);
                 }
             }
-            sql = sql.slice(0,sql.length-6);
+            sql = sql.slice(0,sql.length - 4); // Quito el último AND
         }
         if (order) {
             sql += ` ORDER BY ${order} ${asc}`;
@@ -24,8 +22,9 @@ export default class Salones {
             sql += ` LIMIT ? OFFSET ?`;
         }
         const conexion = await DbUtils.initConnection();
-        const [rows] = await conexion.execute(sql, [...filterValuesArray, limit, offset]);
-       
+        console.log(sql);
+        console.log([...filterValuesArray, limit, offset]);
+        const [rows] = limit > 0 ? await conexion.execute(sql, [...filterValuesArray, limit, offset]) : await conexion.execute(sql, [...filterValuesArray]);
         conexion.end();
         return rows;
     }

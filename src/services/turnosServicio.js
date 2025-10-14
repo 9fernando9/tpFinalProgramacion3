@@ -1,0 +1,61 @@
+import TurnoDTO from '../db/turnoDTO.js';
+import Turnos from '../db/turnos.js';
+
+export default class TurnosServicio {
+    constructor() {
+        this.turnos = new Turnos();
+    }
+    fillAll = async (filters,limit, offset, order,asc) => {
+        const sqlOrder = TurnoDTO.getFieldName(order);
+        const sqlFilter = TurnoDTO.toDBFields(filters);
+        const strAsc = (asc) ? "ASC " : "DESC ";
+        const tableResults = await this.turnos.findAll(sqlFilter, limit, offset, sqlOrder, strAsc);
+        const dtoResults = tableResults.map(row => new TurnoDTO(row["turno_id"], row["orden"], row["hora_desde"], row["hora_hasta"], row["activo"], row["creado"], row["modificado"]));
+        return dtoResults;
+    }
+
+    findById = async (id) => {
+        const row = await this.turnos.findById(id);
+        if (!row) return null;
+        return new TurnoDTO(row["turno_id"], row["orden"], row["hora_desde"], row["hora_hasta"], row["activo"], row["creado"], row["modificado"]);
+    }
+
+    create = async (turno) => {
+        const turnoToInsert = {
+            ...turno,
+            creado: new Date().toISOString().replace('T', ' ').replace('Z', ''),
+            modificado: new Date().toISOString().replace('T', ' ').replace('Z', '')
+        }
+        return this.turnos.create(turnoToInsert);
+    }
+
+    update = async (turno_id, turno) => {
+        const row = await this.turnos.findById(turno_id);
+        if (!row){
+            return null;
+        }else{
+            const existing = {
+                orden: row.orden,
+                hora_desde: row.hora_desde,
+                hora_hasta: row.hora_hasta,
+                activo: row.activo,
+                creado: row.creado,
+                modificado: row.modificado
+            };
+            const turnoToUpdate = {
+                ...existing,
+                ...turno,
+                modificado: new Date().toISOString().replace('T', ' ').replace('Z', '')
+            }
+            return this.turnos.update(turno_id, turnoToUpdate);
+        }
+    }
+     
+    delete = async (turno_id) => {
+        const turnoToUpdate = {
+            modificado: new Date().toISOString().replace('T', ' ').replace('Z', '')
+        }
+        return this.turnos.delete(turno_id, turnoToUpdate);
+    }
+
+}
