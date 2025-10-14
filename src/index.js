@@ -1,5 +1,5 @@
 import express from 'express';
-import routes from './routes/index.routes.js';
+import routes from './routes/indexRuta.js';
 
 const app = express();
 //Middleware to parse JSON bodies
