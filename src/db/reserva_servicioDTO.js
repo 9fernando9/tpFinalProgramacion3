@@ -24,7 +24,6 @@ export default class Reserva_ServicioDTO {
             reserva_servicio_id: 'reserva_servicio_id',
             reserva_id: 'reserva_id',
             servicio_id: 'servicio_id',
-            turno_id: 'turno_id',
             importe: 'importe',
             creado: 'creado',
             modificado: 'modificado'
