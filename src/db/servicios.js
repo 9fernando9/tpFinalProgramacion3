@@ -56,10 +56,10 @@ export default class Servicios {
         return this.findById(rows[0].servicio_id);
     }
 
-    update = async (servicio_id, { descripcion, importe, activo, creado, modificado }) => {
-        const strSql = 'UPDATE servicios SET descripcion = ?, importe = ?, activo = ?, creado = ?, modificado = ? WHERE servicio_id = ?';
+    update = async (servicio_id, { descripcion, importe, activo, modificado }) => {
+        const strSql = 'UPDATE servicios SET descripcion = ?, importe = ?, activo = ?, modificado = ? WHERE servicio_id = ?';
         const conexion = await DbUtils.initConnection();
-        await conexion.query(strSql, [descripcion, importe, activo, creado, modificado, servicio_id]);
+        await conexion.query(strSql, [descripcion, importe, activo, modificado, servicio_id]);
         conexion.end();
         return this.findById(servicio_id);
     };

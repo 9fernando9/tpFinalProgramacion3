@@ -42,12 +42,12 @@ export default class Reservas_Servicios {
         return (rows.length > 0)? rows[0] : null;
     }
 
-    create = async ({ reserva_id, servicio_id, activo, creado, modificado }) => {
-        const strSql = 'INSERT INTO reservas_servicios (reserva_id, servicio_id, activo, creado, modificado) VALUES (?, ?, ?, ?, ?);';
+    create = async ({ reserva_id, servicio_id, importe, creado, modificado }) => {
+        const strSql = 'INSERT INTO reservas_servicios (reserva_id, servicio_id, importe, creado, modificado) VALUES (?, ?, ?, ?, ?);';
 
         const conexion = await DbUtils.initConnection();
 
-        await conexion.query(strSql, [reserva_id, servicio_id, activo, creado, modificado]);
+        await conexion.query(strSql, [reserva_id, servicio_id, importe, creado, modificado]);
 
         const [rows] = await conexion.query('SELECT LAST_INSERT_ID() AS reserva_servicio_id');
 
@@ -56,10 +56,10 @@ export default class Reservas_Servicios {
         return this.findById(rows[0].reserva_servicio_id);
     }
 
-    update = async (reserva_servicio_id, { reserva_id, servicio_id, activo, creado, modificado }) => {
-        const strSql = 'UPDATE reservas_servicios SET reserva_id = ?, servicio_id = ?, activo = ?, creado = ?, modificado = ? WHERE reserva_servicio_id = ?';
+    update = async (reserva_servicio_id, { reserva_id, servicio_id, importe, modificado }) => {
+        const strSql = 'UPDATE reservas_servicios SET reserva_id = ?, servicio_id = ?, importe = ?, modificado = ? WHERE reserva_servicio_id = ?';
         const conexion = await DbUtils.initConnection();
-        await conexion.query(strSql, [reserva_id, servicio_id, activo, creado, modificado, reserva_servicio_id]);
+        await conexion.query(strSql, [reserva_id, servicio_id, importe, modificado, reserva_servicio_id]);
         conexion.end();
         return this.findById(reserva_servicio_id);
     };

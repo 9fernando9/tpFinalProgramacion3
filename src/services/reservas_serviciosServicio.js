@@ -10,14 +10,14 @@ export default class Reservas_ServiciosServicio {
         const sqlFilter = Reserva_servicioDTO.toDBFields(filters);
         const strAsc = (asc) ? "ASC " : "DESC ";
         const tableResults = await this.reserva_servicio.findAll(sqlFilter, limit, offset, sqlOrder, strAsc);
-        const dtoResults = tableResults.map(row => new Reserva_servicioDTO(row["reserva_servicio_id"], row["reserva_id"], row["servicio_id"], row["activo"], row["creado"], row["modificado"]));
+        const dtoResults = tableResults.map(row => new Reserva_servicioDTO(row["reserva_servicio_id"], row["reserva_id"], row["servicio_id"], row['importe'],row["activo"], row["creado"], row["modificado"]));
         return dtoResults;
     }
 
     findById = async (id) => {
         const row = await this.reserva_servicio.findById(id);
         if (!row) return null;
-        return new Reserva_servicioDTO(row["reserva_servicio_id"], row["reserva_id"], row["servicio_id"], row["activo"], row["creado"], row["modificado"]);
+        return new Reserva_servicioDTO(row["reserva_servicio_id"], row["reserva_id"], row["servicio_id"], row["importe"], row["activo"], row["creado"], row["modificado"]);
     }
 
     create = async (reserva_servicio) => {
@@ -37,8 +37,7 @@ export default class Reservas_ServiciosServicio {
             const existing = {
                 reserva_id: row.reserva_id,
                 servicio_id: row.servicio_id,
-                activo: row.activo,
-                creado: row.creado,
+                importe: row.importe,
                 modificado: row.modificado
             };
             const reserva_servicioToUpdate = {
