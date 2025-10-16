@@ -6,27 +6,40 @@ export default class SalonesControlador {
     }
 
     getAllSalones = async(req, res) => {
-        //Filtros
-        const titulo = req.body.titulo;
-        const capacidad = req.body.capacidad;
-        const activo = req.body.activo;
-          
-        //Paginación
-        const limit = req.body.limit;
-        const offset = req.body.offset;
-        const order = req.body.order;
-        const asc = req.body.asc;
+        const { body } = req;
+        let filters = {};
+        let pLimit = 10;
+        let pOffset = 0;
+        let pOrder = "salon_id";
+        let pAsc = "ASC";
+        if(Object.keys(body).length > 0){
+            if (Object.prototype.hasOwnProperty.call(body, 'activo')) {
+                if (body.activo !== null) filters.activo = body.activo;
+            }
+            if (Object.prototype.hasOwnProperty.call(body, 'titulo')) {
+                if (body.titulo !== null) filters.titulo = body.titulo;
+            }
+            if (Object.prototype.hasOwnProperty.call(body, 'capacidad')) {
+                if (body.capacidad !== null) filters.capacidad = body.capacidad;
+            }
+            if (Object.prototype.hasOwnProperty.call(body, 'importe')) {
+                if (body.importe !== null) filters.importe = body.importe;
+            }
+            if (Object.prototype.hasOwnProperty.call(body, 'limit')) {
+                if (body.limit !== null) pLimit = body.limit ? Number(body.limit) : 10;
+            }
+            if (Object.prototype.hasOwnProperty.call(body, 'offset')) {
+                if (body.offset !== null) pOffset = body.offset ? Number(body.offset) : 0;
+            }
+            if (Object.prototype.hasOwnProperty.call(body, 'order')) {
+                if (body.order !== null) pOrder = body.order || "turno_id";
+            }
+            if (Object.prototype.hasOwnProperty.call(body, 'asc')) {                                
+                if (body.asc !== null) pAsc = body.asc == "DESC" ? "DESC" : "ASC";
+            }
+        }
 
         try {
-            const pLimit = limit ? Number(limit) : 0;
-            const pOffset = offset ? Number(offset) : 0;
-            const pOrder = order || "salon_id";
-            const pAsc = asc === "false" ? false : true;
-            const filters = {};
-            if (typeof titulo !== 'undefined' && titulo !== '') filters.titulo = String(titulo).trim();
-            if (typeof capacidad !== 'undefined' && capacidad !== '') filters.capacidad = Number(capacidad);
-            if (typeof activo !== 'undefined' && activo !== '') filters.activo = activo;
-
             const salones = await this.salonesServicio.fillAll(filters, pLimit, pOffset, pOrder, pAsc);
             res.status(200).send({
                 status:true,
@@ -45,14 +58,6 @@ export default class SalonesControlador {
 
     findById = async (req, res) => {
         const salonId = Number(req.params.salonId);
-
-        if (!Number.isInteger(salonId)) {
-            res.status(400).send({
-                status:false,
-                error: 'El parámetro debe ser un número entero'
-            });
-        }
-
         try{
             const salon = await this.salonesServicio.findById(salonId);
             if (!salon) {
@@ -106,21 +111,6 @@ export default class SalonesControlador {
     update = async (req, res) => {
         const body = req.body;
         const salonId = Number(req.params.salonId);
-
-        if (!Number.isInteger(salonId)) {
-            res.status(404).send({
-                    status: false,
-                    data: {
-                        error: "El parámetro salonId debe ser un numero positivo"
-                    }
-                });
-        }
-        if(Object.keys(body).length === 0){
-            res.status(400).send({
-                status:false,
-                data:{ error: 'El cuerpo de la solicitud no debe estar vacío' }
-            });
-        }
         try {
             const salonActualizado = await this.salonesServicio.update(salonId, body);
             if (!salonActualizado) {
@@ -144,14 +134,6 @@ export default class SalonesControlador {
 
     delete = async (req, res) => {
         const salonId = Number(req.params.salonId);
-        if (!Number.isInteger(salonId)) {
-            res.status(404).send({
-                    status: false,
-                    data: {
-                        error: "El parámetro salonId debe ser un numero positivo."
-                    }
-                });
-        }
         try {
             const salonActualizado = await this.salonesServicio.delete(salonId);
             res.status(200).send({

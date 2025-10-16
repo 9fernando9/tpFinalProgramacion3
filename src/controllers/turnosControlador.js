@@ -6,25 +6,40 @@ export default class TurnosControlador {
     }
 
     getAllTurnos = async(req, res) => {
-        //Filtros
-        const orden = req.body.orden;
-        const horaDesde = req.body.horaDesde;
-        const horaHasta = req.body.horaHasta;
-        const activo = req.body.activo;
-          
-        //Paginación
-        const limit = req.body.limit;
-        const offset = req.body.offset;
-        const order = req.body.order;
-        const asc = req.body.asc;
-
+        const { body } = req;
+        let filters = {};
+        let pLimit = 10;
+        let pOffset = 0;
+        let pOrder = "turno_id";
+        let pAsc = "ASC";
+        if(Object.keys(body).length > 0){
+            if (Object.prototype.hasOwnProperty.call(body, 'activo')) {
+                if (body.activo !== null) filters.activo = body.activo;
+            }
+            if (Object.prototype.hasOwnProperty.call(body, 'orden')) {
+                if (body.orden !== null) filters.orden = body.orden;
+            }
+            if (Object.prototype.hasOwnProperty.call(body, 'hora_desde')) {
+                if (body.hora_desde !== null) filters.hora_desde = body.hora_desde;
+            }
+            if (Object.prototype.hasOwnProperty.call(body, 'hora_hasta')) {
+                if (body.hora_hasta !== null) filters.hora_hasta = body.hora_hasta;
+            }
+            
+            if (Object.prototype.hasOwnProperty.call(body, 'limit')) {
+                if (body.limit !== null) pLimit = body.limit ? Number(body.limit) : 10;
+            }
+            if (Object.prototype.hasOwnProperty.call(body, 'offset')) {
+                if (body.offset !== null) pOffset = body.offset ? Number(body.offset) : 0;
+            }
+            if (Object.prototype.hasOwnProperty.call(body, 'order')) {
+                if (body.order !== null) pOrder = body.order || "turno_id";
+            }
+            if (Object.prototype.hasOwnProperty.call(body, 'asc')) {                                
+                if (body.asc !== null) pAsc = body.asc == "DESC" ? "DESC" : "ASC";
+            }
+        }
         try {
-            const pLimit = limit ? Number(limit) : 0;
-            const pOffset = offset ? Number(offset) : 0;
-            const pOrder = order || "turno_id";
-            const pAsc = asc === "false" ? false : true;
-            const filters = {};
-
             const turnos = await this.turnosServicio.fillAll(filters, pLimit, pOffset, pOrder, pAsc);
             res.status(200).send({
                 status:true,
@@ -43,14 +58,6 @@ export default class TurnosControlador {
 
     findById = async (req, res) => {
         const turnoId = Number(req.params.turnoId);
-
-        if (!Number.isInteger(turnoId)) {
-            res.status(400).send({
-                status:false,
-                error: 'El parámetro debe ser un número entero'
-            });
-        }
-
         try{
             const turno = await this.turnosServicio.findById(turnoId);
             if (!turno) {
@@ -78,22 +85,11 @@ export default class TurnosControlador {
 
     create = async (req, res) => {
         const { body } = req;
-        if (!body.orden || !body.horaDesde || !body.horaHasta) {
-            res
-                .status(404)
-                .send({
-                    status:false,
-                    data: {
-                        error: "Uno de los siguientes data falta o es vacío: 'orden', 'horaDesde', 'horaHasta'."
-                    }
-                });
-        }
-
         try {
             const turno = {
                 orden: body.orden,
-                horaDesde: body.horaDesde,
-                horaHasta: body.horaHasta,
+                hora_desde: body.hora_desde,
+                hora_hasta: body.hora_hasta,
                 activo: "1"
             };
             const turnoCreado = await this.turnosServicio.create(turno);
@@ -112,21 +108,6 @@ export default class TurnosControlador {
     update = async (req, res) => {
         const body = req.body;
         const turnoId = Number(req.params.turnoId);
-
-        if (!Number.isInteger(turnoId)) {
-            res.status(404).send({
-                    status: false,
-                    data: {
-                        error: "El parámetro turnoId debe ser un numero positivo"
-                    }
-                });
-        }
-        if(Object.keys(body).length === 0){
-            res.status(400).send({
-                status:false,
-                data:{ error: 'El cuerpo de la solicitud no debe estar vacío' }
-            });
-        }
         try {
             const turnoActualizado = await this.turnosServicio.update(turnoId, body);
             if (!turnoActualizado) {
@@ -150,14 +131,6 @@ export default class TurnosControlador {
 
     delete = async (req, res) => {
         const turnoId = Number(req.params.turnoId);
-        if (!Number.isInteger(turnoId)) {
-            res.status(404).send({
-                    status: false,
-                    data: {
-                        error: "El parámetro turnoId debe ser un numero positivo."
-                    }
-                });
-        }
         try {
             const turnoEliminado = await this.turnosServicio.delete(turnoId);
             res.status(200).send({

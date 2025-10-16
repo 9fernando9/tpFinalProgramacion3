@@ -6,24 +6,36 @@ export default class ServicioControlador {
     }
 
     getAllServicios = async(req, res) => {
-        //Filtros
-        const descripcion = req.body.descripcion;
-        const importe = req.body.importe;
-        const activo = req.body.activo;
-          
-        //Paginación
-        const limit = req.body.limit;
-        const offset = req.body.offset;
-        const order = req.body.order;
-        const asc = req.body.asc;
-
+        const { body } = req;
+        let filters = {};
+        let pLimit = 10;
+        let pOffset = 0;
+        let pOrder = "servicio_id";
+        let pAsc = "ASC";
+        if(Object.keys(body).length > 0){
+            if (Object.prototype.hasOwnProperty.call(body, 'activo')) {
+                if (body.activo !== null) filters.activo = body.activo;
+            }
+            if (Object.prototype.hasOwnProperty.call(body, 'descripcion')) {
+                if (body.descripcion !== null) filters.descripcion = body.descripcion;
+            }
+            if (Object.prototype.hasOwnProperty.call(body, 'importe')) {
+                if (body.importe !== null) filters.importe = body.importe;
+            }
+            if (Object.prototype.hasOwnProperty.call(body, 'limit')) {
+                if (body.limit !== null) pLimit = body.limit ? Number(body.limit) : 10;
+            }
+            if (Object.prototype.hasOwnProperty.call(body, 'offset')) {
+                if (body.offset !== null) pOffset = body.offset ? Number(body.offset) : 0;
+            }
+            if (Object.prototype.hasOwnProperty.call(body, 'order')) {
+                if (body.order !== null) pOrder = body.order || "turno_id";
+            }
+            if (Object.prototype.hasOwnProperty.call(body, 'asc')) {                                
+                if (body.asc !== null) pAsc = body.asc == "DESC" ? "DESC" : "ASC";
+            }
+        }
         try {
-            const pLimit = limit ? Number(limit) : 0;
-            const pOffset = offset ? Number(offset) : 0;
-            const pOrder = order || "servicio_id";
-            const pAsc = asc === "false" ? false : true;
-            const filters = {};
-
             const servicios = await this.servicioServicio.fillAll(filters, pLimit, pOffset, pOrder, pAsc);
             res.status(200).send({
                 status:true,
@@ -42,12 +54,6 @@ export default class ServicioControlador {
 
     findById = async (req, res) => {
         const servicioId = Number(req.params.servicioId);
-        if (!Number.isInteger(servicioId)) {
-            res.status(400).send({
-                status:false,
-                error: 'El parámetro debe ser un número entero'
-            });
-        }
         try{
             const servicio = await this.servicioServicio.findById(servicioId);
             if (!servicio) {
@@ -96,21 +102,7 @@ export default class ServicioControlador {
 
     update = async (req, res) => {
         const body = req.body;
-        const turnoId = Number(req.params.turnoId);
-        if (!Number.isInteger(turnoId)) {
-            res.status(404).send({
-                    status: false,
-                    data: {
-                        error: "El parámetro seervicioId debe ser un numero positivo"
-                    }
-                });
-        }
-        if(Object.keys(body).length === 0){
-            res.status(400).send({
-                status:false,
-                data:{ error: 'El cuerpo de la solicitud no debe estar vacío' }
-            });
-        }
+        const servicioId = Number(req.params.servicioId);
         try {
             const servicioActualizado = await this.servicioServicio.update(servicioId, body);
             if (!servicioActualizado) {
@@ -134,14 +126,6 @@ export default class ServicioControlador {
 
     delete = async (req, res) => {
         const servicioId = Number(req.params.servicioId);
-        if (!Number.isInteger(servicioId)) {
-            res.status(404).send({
-                    status: false,
-                    data: {
-                        error: "El parámetro servicioId debe ser un numero positivo."
-                    }
-                });
-        }
         try {
             const servicioEliminado = await this.servicioServicio.delete(servicioId);
             res.status(200).send({

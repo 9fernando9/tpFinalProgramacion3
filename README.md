@@ -5,4 +5,5 @@ Integrantes:
 _ Bruno Cabiller
 _ Marcelo Romero
 _ Alejandro Romero
-_ Alejandro Sebastian Flores \* Luis Fernando Gomez
+_ Alejandro Sebastian Flores
+\_ Luis Fernando Gomez

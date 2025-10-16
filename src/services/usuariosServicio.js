@@ -6,10 +6,7 @@ export default class UsuariosServicio {
         this.usuarios = new Usuarios();
     }
     fillAll = async (filters,limit, offset, order,asc) => {
-        const sqlFilter = UsuarioDTO.toDBFields(filters);
-        const sqlOrder = UsuarioDTO.getFieldName(order);
-        const strAsc = (asc) ? "ASC " : "DESC ";
-        const tableResults = await this.usuarios.findAll(sqlFilter, limit, offset, sqlOrder, strAsc);
+        const tableResults = await this.usuarios.findAll(filters, limit, offset, order, asc);
         const dtoResults = tableResults.map(row => new UsuarioDTO(row["usuario_id"], row["nombre"], row["apellido"], row["nombre_usuario"], row["contrasenia"], row["tipo_usuario"], row["celular"], row["foto"], row["activo"], row["creado"], row["modificado"]));
         return dtoResults;
     }
@@ -45,12 +42,18 @@ export default class UsuariosServicio {
         return this.usuarios.update(usuario_id, usuarioToUpdate);
         }
     }
+    
 
     delete = async (usuario_id) => {
-        const usuarioToUpdate = {
-            modificado: new Date().toISOString().replace('T', ' ').replace('Z', '')
+        const existe = await this.usuarios.findById(usuario_id);
+        if (!existe){
+            return "El usuario no existe";
+        }else{
+            const usuarioToUpdate = {
+                modificado: new Date().toISOString().replace('T', ' ').replace('Z', '')
+            }
+            return this.usuarios.delete(usuario_id, usuarioToUpdate);
         }
-        return this.usuarios.delete(usuario_id, usuarioToUpdate);
     }
 
 }
