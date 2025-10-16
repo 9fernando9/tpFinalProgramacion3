@@ -6,10 +6,7 @@ export default class SalonesServicio {
         this.salones = new Salones();
     }
     fillAll = async (filters,limit, offset, order,asc) => {
-        const sqlOrder = SalonDTO.getFieldName(order);
-        const sqlFilter = SalonDTO.toDBFields(filters);
-        const strAsc = (asc) ? "ASC " : "DESC ";
-        const tableResults = await this.salones.findAll(sqlFilter, limit, offset, sqlOrder, strAsc);
+        const tableResults = await this.salones.findAll(filters, limit, offset, order, asc);
         const dtoResults = tableResults.map(row => new SalonDTO(row["salon_id"], row["titulo"], row["direccion"], row["latitud"], row["longitud"], row["capacidad"], row["importe"], row["activo"], row["creado"], row["modificado"]));
         return dtoResults;
     }
@@ -53,10 +50,15 @@ export default class SalonesServicio {
     }
 
     delete = async (salon_id) => {
-        const salonToUpdate = {
-            modificado: new Date().toISOString().replace('T', ' ').replace('Z', '')
+        const existe = await this.salones.findById(salon_id);
+        if (!existe){
+            return "El salon no existe";
+        }else{
+            const salonToUpdate = {
+                modificado: new Date().toISOString().replace('T', ' ').replace('Z', '')
+            }
+            return this.salones.delete(salon_id, salonToUpdate);
         }
-        return this.salones.delete(salon_id, salonToUpdate);
     }
 
 }

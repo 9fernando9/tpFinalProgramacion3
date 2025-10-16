@@ -4,34 +4,36 @@ export default class Salones {
     
     findAll = async (filters = null,limit = 10, offset = 0, order = "salon_id",asc= "ASC") => {
         let sql = 'SELECT * FROM salones';
-        const filterValuesArray = [];
-        if (filters) {
+        const params = [];
+        if (filters && !Array.isArray(filters) && typeof filters === 'object') {
+            filters = Object.keys(filters).map(k => ({ [k]: filters[k] }));
+        }
+        if (Array.isArray(filters) && filters.length > 0) {
             sql += ' WHERE ';
-            for(const filter of filters) {
-                for(const key of Object.keys(filter)) {
+            for (const filter of filters) {
+                for (const key of Object.keys(filter)) {
                     sql += `${key} = ? AND `;
-                    filterValuesArray.push(filter[key]);
+                    params.push(filter[key]);
                 }
             }
-            sql = sql.slice(0,sql.length - 4); // Quito el último AND
+            sql = sql.slice(0, sql.length - 5);
         }
         if (order) {
             sql += ` ORDER BY ${order} ${asc}`;
         }
-        if (limit > 0) {
+        if (Number(limit) > 0) {
             sql += ` LIMIT ? OFFSET ?`;
+            params.push(Number(limit), Number(offset || 0));
         }
         const conexion = await DbUtils.initConnection();
-        console.log(sql);
-        console.log([...filterValuesArray, limit, offset]);
-        const [rows] = limit > 0 ? await conexion.execute(sql, [...filterValuesArray, limit, offset]) : await conexion.execute(sql, [...filterValuesArray]);
+        const [rows] = await conexion.execute(sql, params);
         conexion.end();
         return rows;
     }
 
     findById = async (salonId) => {
         // Defino el string de consulta
-        const strSql = `SELECT * FROM salones WHERE salon_id = ?`;
+        const strSql = `SELECT * FROM salones WHERE salon_id = ? AND activo= 1`;
 
         const conexion = await DbUtils.initConnection();
 
@@ -70,7 +72,7 @@ export default class Salones {
         const conexion = await DbUtils.initConnection();
         await conexion.query(strSql, [salon_id]);
         conexion.end();
-        return this.findById(salon_id);
+        return "Salon eliminado correctamente";
     }
 
 }

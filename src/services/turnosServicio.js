@@ -6,10 +6,7 @@ export default class TurnosServicio {
         this.turnos = new Turnos();
     }
     fillAll = async (filters,limit, offset, order,asc) => {
-        const sqlOrder = TurnoDTO.getFieldName(order);
-        const sqlFilter = TurnoDTO.toDBFields(filters);
-        const strAsc = (asc) ? "ASC " : "DESC ";
-        const tableResults = await this.turnos.findAll(sqlFilter, limit, offset, sqlOrder, strAsc);
+        const tableResults = await this.turnos.findAll(filters, limit, offset, order, asc);
         const dtoResults = tableResults.map(row => new TurnoDTO(row["turno_id"], row["orden"], row["hora_desde"], row["hora_hasta"], row["activo"], row["creado"], row["modificado"]));
         return dtoResults;
     }
@@ -52,10 +49,15 @@ export default class TurnosServicio {
     }
      
     delete = async (turno_id) => {
-        const turnoToUpdate = {
-            modificado: new Date().toISOString().replace('T', ' ').replace('Z', '')
+        const existe = await this.turnos.findById(turno_id);
+        if (!existe){
+            return "El turno no existe";
+        }else{
+            const turnoToUpdate = {
+                modificado: new Date().toISOString().replace('T', ' ').replace('Z', '')
+            }
+            return this.turnos.delete(turno_id, turnoToUpdate);
         }
-        return this.turnos.delete(turno_id, turnoToUpdate);
     }
 
 }

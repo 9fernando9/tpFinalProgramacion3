@@ -6,32 +6,42 @@ export default class UsuariosControlador {
     }
 
     getAllUsuarios = async(req, res) => {
-         //Filtros
-        const apellido = req.query.apellido;
-        const nombre = req.query.nombre;
-        const nombre_usuario = req.query.nombre_usuario;
-        const tipo_usuario = req.query.tipo_usuario;
-        const celular = req.query.celular;
-        const activo = req.query.activo;
-        //Paginación
-        const limit = req.query.limit;
-        const offset = req.query.offset;
-        const order = req.query.order;
-        const asc = req.query.asc;
-
+        const { body } = req;
+        let filters = {};
+        let pLimit = 10;
+        let pOffset = 0;
+        let pOrder = "usuario_id";
+        let pAsc = "ASC";
+        if(Object.keys(body).length > 0){
+            if (Object.prototype.hasOwnProperty.call(body, 'activo')) {
+                if (body.activo !== null) filters.activo = body.activo;
+            }
+            if (Object.prototype.hasOwnProperty.call(body, 'apellido')) {
+                if (body.apellido !== null) filters.apellido = body.apellido;
+            }
+            if (Object.prototype.hasOwnProperty.call(body, 'nombre')) {
+                if (body.nombre !== null) filters.nombre = body.nombre;
+            }
+            if (Object.prototype.hasOwnProperty.call(body, 'nombre_usuario')) {
+                if (body.nombre_usuario !== null) filters.nombre_usuario = body.nombre_usuario;
+            }
+            if (Object.prototype.hasOwnProperty.call(body, 'tipo_usuario')) {
+                if (body.tipo_usuario !== null) filters.tipo_usuario = body.tipo_usuario;
+            }
+            if (Object.prototype.hasOwnProperty.call(body, 'limit')) {
+                if (body.limit !== null) pLimit = body.limit ? Number(body.limit) : 10;
+            }
+            if (Object.prototype.hasOwnProperty.call(body, 'offset')) {
+                if (body.offset !== null) pOffset = body.offset ? Number(body.offset) : 0;
+            }
+            if (Object.prototype.hasOwnProperty.call(body, 'order')) {
+                if (body.order !== null) pOrder = body.order || "usuario_id";
+            }
+            if (Object.prototype.hasOwnProperty.call(body, 'asc')) {                                
+                if (body.asc !== null) pAsc = body.asc == "DESC" ? "DESC" : "ASC";
+            }
+        }
         try {
-            const pLimit = limit ? Number(limit) : 0;
-            const pOffset = offset ? Number(offset) : 0;
-            const pOrder = order || "usuario_id";
-            const pAsc = asc === "false" ? false : true;
-            const filters = {};
-            
-            if (nombre) filters.nombre = nombre;
-            if (apellido) filters.apellido = apellido;
-            if (nombre_usuario) filters.nombre_usuario = nombre_usuario;
-            if (tipo_usuario) filters.tipo_usuario = tipo_usuario;
-            if (celular) filters.celular = celular;
-            if (activo) filters.activo = activo;
             const usuarios = await this.usuariosServicio.fillAll(filters, pLimit, pOffset, pOrder, pAsc);
             res.status(200).send({
                 status:true,
@@ -50,14 +60,6 @@ export default class UsuariosControlador {
 
     findById = async (req, res) => {
         const usuarioId = Number(req.params.usuarioId);
-
-        if (!Number.isInteger(usuarioId)) {
-            res.status(400).send({
-                status:false,
-                error: 'El parámetro debe ser un número entero'
-            });
-        }
-
         try{
             const usuario = await this.usuariosServicio.findById(usuarioId);
             if (!usuario) {
@@ -85,7 +87,6 @@ export default class UsuariosControlador {
 
     create = async (req, res) => {
         const { body } = req;
-        
         try {
             const usuario = {
                 nombre: body.nombre,
@@ -104,29 +105,15 @@ export default class UsuariosControlador {
             });
         } catch (error) {
             res.status(error?.status || 500).send({ 
-                    status:false,
-                    data: { error: error?.message || error,errorDetails: error.message }
-                });
-        }
+                status:false,
+                 data: { error: error?.message || error,errorDetails: error.message }
+            });
+        } 
     }
 
     update = async (req, res) => {
         const body = req.body;
         const usuarioId = Number(req.params.usuarioId);
-        if (!Number.isInteger(usuarioId)) {
-            res.status(404).send({
-                    status: false,
-                    data: {
-                        error: "El parámetro usuarioId debe ser un numero positivo"
-                    }
-                });
-        }
-        if(Object.keys(body).length === 0){
-            res.status(400).send({
-                status:false,
-                data:{ error: 'El cuerpo de la solicitud no debe estar vacío' }
-            });
-        }
         try {
             const usuarioActualizado = await this.usuariosServicio.update(usuarioId, body);
             if (!usuarioActualizado) {
@@ -150,14 +137,6 @@ export default class UsuariosControlador {
 
     delete = async (req, res) => {
         const usuarioId = Number(req.params.usuarioId);
-        if (!Number.isInteger(usuarioId)) {
-            res.status(404).send({
-                    status: false,
-                    data: {
-                        error: "El parámetro usuarioId debe ser un numero positivo."
-                    }
-                });
-        }
         try {
             const usuarioActualizado = await this.usuariosServicio.delete(usuarioId);
             res.status(200).send({

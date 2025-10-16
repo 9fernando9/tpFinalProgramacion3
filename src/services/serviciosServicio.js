@@ -6,10 +6,7 @@ export default class serviciosServicio {
         this.servicios = new servicios();
     }
     fillAll = async (filters,limit, offset, order,asc) => {
-        const sqlOrder = servicioDTO.getFieldName(order);
-        const sqlFilter = servicioDTO.toDBFields(filters);
-        const strAsc = (asc) ? "ASC " : "DESC ";
-        const tableResults = await this.servicios.findAll(sqlFilter, limit, offset, sqlOrder, strAsc);
+        const tableResults = await this.servicios.findAll(filters, limit, offset, order, asc);
         const dtoResults = tableResults.map(row => new servicioDTO(row["servicio_id"],row["descripcion"],row["importe"],row["importe"],row["activo"],row["creado"],row["modificado"]));
         return dtoResults;
     }
@@ -50,10 +47,15 @@ export default class serviciosServicio {
     }
      
     delete = async (servicio_id) => {
-        const servicioToUpdate = {
-            modificado: new Date().toISOString().replace('T', ' ').replace('Z', '')
+        const existe = await this.servicios.findById(servicio_id);
+        if (!existe){
+            return "El servicio no existe";
+        }else{
+            const servicioToUpdate = {
+                modificado: new Date().toISOString().replace('T', ' ').replace('Z', '')
+            }
+            return this.servicios.delete(servicio_id, servicioToUpdate);
         }
-        return this.servicios.delete(servicio_id, servicioToUpdate);
     }
 
 }
