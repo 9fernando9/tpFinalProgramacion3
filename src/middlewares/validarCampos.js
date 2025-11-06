@@ -1,11 +1,18 @@
 import { validationResult } from "express-validator";
 
 export const validarCampos = (req, res, next) => {
-    const error = validationResult(req);
-    if (!error.isEmpty()) {
-        return res.status(400).json({errores : error.array()});
+  const errors = validationResult(req);
 
-    }
-    next();
+  if (!errors.isEmpty()) {
+    return res.status(400).json({
+      status: false,
+      message: "Errores de validación",
+      errors: errors.array().map(err => ({
+        campo: err.path,
+        mensaje: err.msg
+      }))
+    });
+  }
 
+  next();
 };
