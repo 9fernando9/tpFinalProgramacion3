@@ -1,35 +1,85 @@
-import { conexion } from './conexion.js';
+import DbUtils from './dbUtils.js';
 
 export default class Salones {
-    buscarTodos = async () => {
-        const sql = 'SELECT * FROM salones WHERE activo = 1'
-        const [salones] = await conexion.execute(sql)
-        return salones;
+
+  
+  async findAll(filters = null, limit = 10, offset = 0, order = "salon_id", asc = "ASC") {
+    let sql = 'SELECT * FROM salones WHERE activo = 1';
+    const filterValuesArray = [];
+
+    if (filters) {
+      sql += ' AND ';
+      for (const filter of filters) {
+        for (const key of Object.keys(filter)) {
+          sql += `${key} = ? AND `;
+          filterValuesArray.push(filter[key]);
+        }
+      }
+      sql = sql.slice(0, sql.length - 4); 
     }
 
-
-    buscarPorId = async(id) => {
-        const sql = 'SELECT * FROM salones WHERE salon_id = ? AND activo = 1';
-        const [salones] = await conexion.execute(sql, [id]);
-        return salones[0];
+    if (order) {
+      sql += ` ORDER BY ${order} ${asc}`;
+    }
+    if (limit > 0) {
+      sql += ` LIMIT ? OFFSET ?`;
     }
 
-    crear = async ({titulo, direccion, capacidad, importe}) => {
-        const sql = 'INSERT INTO salones (titulo, direccion, importe, capacidad, activo) VALUES (?, ?, ?, ?, 1)';
-        const [resultado] = await conexion.execute(sql, [titulo , direccion, importe, capacidad]);
-        return {id: resultado.insertId, titulo, direccion, importe, capacidad};
-    }
+    const conexion = await DbUtils.initConnection();
+    const [rows] = limit > 0
+      ? await conexion.execute(sql, [...filterValuesArray, limit, offset])
+      : await conexion.execute(sql, [...filterValuesArray]);
+    await conexion.end();
 
-    actualizar = async(id , {titulo , direccion, importe, capacidad}) => {
-        const sql = 'UPDATE salones SET titulo = ?, direccion = ?, capacidad = ?, importe = ? WHERE salon_id = ? AND activo = 1';
-        const [resultado] = await conexion.execute(sql , [titulo , direccion, importe, capacidad , id]);
-        return {id , titulo , direccion, importe, capacidad};
-    }
-    
-    eliminar = async(id) => {
-        const sql = 'UPDATE salones SET activo = 0 WHERE salon_id = ?'
-        await conexion.execute(sql , [id]);
-        return {id};
-    }
+    return rows;
+  }
 
+  
+  async findById(salonId) {
+    const strSql = `SELECT * FROM salones WHERE salon_id = ? AND activo = 1`;
+    const conexion = await DbUtils.initConnection();
+    const [rows] = await conexion.query(strSql, [salonId]);
+    await conexion.end();
+    return rows.length > 0 ? rows[0] : null;
+  }
+
+  
+  async create({ titulo, direccion, latitud, longitud, capacidad, importe, activo = 1, creado, modificado }) {
+    const strSql = `
+      INSERT INTO salones (titulo, direccion, latitud, longitud, capacidad, importe, activo, creado, modificado)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+    `;
+    const conexion = await DbUtils.initConnection();
+    await conexion.query(strSql, [titulo, direccion, latitud, longitud, capacidad, importe, activo, creado, modificado]);
+    const [rows] = await conexion.query('SELECT LAST_INSERT_ID() AS salon_id');
+    await conexion.end();
+    return this.findById(rows[0].salon_id);
+  }
+
+  
+  async update(salon_id, { titulo, direccion, latitud, longitud, capacidad, importe, modificado }) {
+    const strSql = `
+      UPDATE salones
+      SET titulo = ?, direccion = ?, latitud = ?, longitud = ?, capacidad = ?, importe = ?, modificado = ?
+      WHERE salon_id = ? AND activo = 1
+    `;
+    const conexion = await DbUtils.initConnection();
+    await conexion.query(strSql, [titulo, direccion, latitud, longitud, capacidad, importe, modificado, salon_id]);
+    await conexion.end();
+    return this.findById(salon_id);
+  }
+
+  
+  async delete(id) {
+    const conexion = await DbUtils.initConnection();
+    try {
+      const [result] = await conexion.query(
+        "UPDATE salones SET activo = 0, modificado = NOW() WHERE salon_id = ?",
+        [id]
+      );
+      return { eliminado: result.affectedRows > 0 };
+    } finally {
+      await conexion.end();
+    }
+  }
 }
